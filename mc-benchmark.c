@@ -200,28 +200,10 @@ static void clientDone(client c) {
     }
 }
 
-/* Read a length from the buffer pointed to by *p, store the length in *len,
- * and return the number of bytes that the cursor advanced. */
-static int readLen(char *p, int *len) {
-    char *tail = strstr(p,"\r\n");
-    if (tail == NULL)
-        return 0;
-
-    if (p[0] == 'E') { /* END -- key not present */
-        *len = -1;
-    } else {
-        char *x = tail;
-        while (*x != ' ') x--;
-        *tail = '\0';
-        *len = atoi(x)+5; /* We add 5 bytes for the final "END\r\n" */
-    }
-    return tail+2-p;
-}
-
 static void readHandler(aeEventLoop *el, int fd, void *privdata, int mask)
 {
     char buf[1024*16], *p;
-    int nread, pos=0, len=0;
+    int nread;
     client c = privdata;
     MCB_NOTUSED(el);
     MCB_NOTUSED(fd);
@@ -240,7 +222,6 @@ static void readHandler(aeEventLoop *el, int fd, void *privdata, int mask)
     }
     c->totreceived += nread;
     c->ibuf = sdscatlen(c->ibuf,buf,nread);
-    len = sdslen(c->ibuf);
 
     if (c->replytype == REPLY_RETCODE) {
         /* Check if the first line is complete. This is everything we need
@@ -248,36 +229,12 @@ static void readHandler(aeEventLoop *el, int fd, void *privdata, int mask)
         if ((p = strstr(c->ibuf,"\r\n")) != NULL)
             goto done;
     } else if (c->replytype == REPLY_BULK) {
-        int advance = 0;
-        if (c->readlen < 0) {
-            advance = readLen(c->ibuf+pos,&c->readlen);
-            if (advance) {
-                pos += advance;
-                if (c->readlen == -1) {
-                    goto done;
-                } else {
-                    /* include the trailing \r\n */
-                    c->readlen += 2;
-                }
-            } else {
-                goto skip;
-            }
-        }
-
-        int canconsume;
-        if (c->readlen > 0) {
-            canconsume = c->readlen > (len-pos) ? (len-pos) : c->readlen;
-            c->readlen -= canconsume;
-            pos += canconsume;
-        }
-
-        if (c->readlen == 0)
+        const char response[] = "$1\r\n0\r\n";
+        if (memcmp(c->ibuf, "$1\r\n0\r\n", sizeof(response)) == 0) {
             goto done;
+        }
     }
 
-skip:
-    c->ibuf = sdsrange(c->ibuf,pos,-1);
-    return;
 done:
     clientDone(c);
     return;
