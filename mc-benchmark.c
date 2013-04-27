@@ -519,13 +519,6 @@ int main(int argc, char **argv) {
         c = createClient();
         if (!c) exit(1);
         c->obuf = sdscatprintf(c->obuf,"HSET foo_rand000000000000 0\r\n");
-        {
-            char *data = zmalloc(config.datasize+2);
-            memset(data,'x',config.datasize);
-            data[config.datasize] = '\r';
-            data[config.datasize+1] = '\n';
-            c->obuf = sdscatlen(c->obuf,data,config.datasize+2);
-        }
         prepareClientForReply(c,REPLY_RETCODE);
         createMissingClients(c);
         aeMain(config.el);
