@@ -518,7 +518,7 @@ int main(int argc, char **argv) {
         prepareForBenchmark("HSET");
         c = createClient();
         if (!c) exit(1);
-        c->obuf = sdscatprintf(c->obuf,"HSET foo_rand000000000000 0 0 %d\r\n",config.datasize);
+        c->obuf = sdscatprintf(c->obuf,"HSET foo_rand000000000000 0\r\n");
         {
             char *data = zmalloc(config.datasize+2);
             memset(data,'x',config.datasize);
