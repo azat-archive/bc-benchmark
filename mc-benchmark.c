@@ -392,7 +392,7 @@ void parseOptions(int argc, char **argv) {
 
     for (i = 1; i < argc; i++) {
         int lastarg = i==argc-1;
-        
+
         if (!strcmp(argv[i],"-c") && !lastarg) {
             config.numclients = atoi(argv[i+1]);
             i++;
@@ -515,10 +515,10 @@ int main(int argc, char **argv) {
     }
 
     do {
-        prepareForBenchmark("SET");
+        prepareForBenchmark("HSET");
         c = createClient();
         if (!c) exit(1);
-        c->obuf = sdscatprintf(c->obuf,"set foo_rand000000000000 0 0 %d\r\n",config.datasize);
+        c->obuf = sdscatprintf(c->obuf,"HSET foo_rand000000000000 0 0 %d\r\n",config.datasize);
         {
             char *data = zmalloc(config.datasize+2);
             memset(data,'x',config.datasize);
@@ -531,10 +531,10 @@ int main(int argc, char **argv) {
         aeMain(config.el);
         endBenchmark();
 
-        prepareForBenchmark("GET");
+        prepareForBenchmark("HGET");
         c = createClient();
         if (!c) exit(1);
-        c->obuf = sdscat(c->obuf,"get foo_rand000000000000\r\n");
+        c->obuf = sdscat(c->obuf,"HGET foo_rand000000000000\r\n");
         prepareClientForReply(c,REPLY_BULK);
         createMissingClients(c);
         aeMain(config.el);
