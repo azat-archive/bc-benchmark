@@ -18,13 +18,13 @@ PREFIX= /usr/local
 INSTALL_BIN= $(PREFIX)/bin
 INSTALL= cp -p
 
-BENCHOBJ = ae.o anet.o mc-benchmark.o sds.o adlist.o zmalloc.o
+BENCHOBJ = ae.o anet.o bc-benchmark.o sds.o adlist.o zmalloc.o
 
-BENCHPRGNAME = mc-benchmark
+BENCHPRGNAME = bc-benchmark
 
-all: mc-benchmark
+all: bc-benchmark
 
-mc-benchmark: $(BENCHOBJ)
+bc-benchmark: $(BENCHOBJ)
 	$(CC) -o $(BENCHPRGNAME) $(CCOPT) $(DEBUG) $(BENCHOBJ)
 
 .c.o:
@@ -37,4 +37,4 @@ dep:
 	$(CC) -MM *.c
 
 bench:
-	./mc-benchmark
+	./bc-benchmark
