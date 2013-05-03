@@ -426,6 +426,18 @@ int showThroughput(struct aeEventLoop *eventLoop, long long id, void *clientData
     return 250; /* every 250ms */
 }
 
+void simpleBenchmark(char *command) {
+    client c = createClient();
+    if (!c) exit(1);
+
+    prepareForBenchmark(command);
+    c->obuf = sdscatprintf(c->obuf, "%s foo_rand000000000000 0\r\n", command);
+    prepareClientForReply(c,REPLY_RETCODE);
+    createMissingClients(c);
+    aeMain(config.el);
+    endBenchmark();
+}
+
 int main(int argc, char **argv) {
     client c;
 
@@ -472,23 +484,8 @@ int main(int argc, char **argv) {
     }
 
     do {
-        prepareForBenchmark("HSET");
-        c = createClient();
-        if (!c) exit(1);
-        c->obuf = sdscatprintf(c->obuf,"HSET foo_rand000000000000 0\r\n");
-        prepareClientForReply(c,REPLY_RETCODE);
-        createMissingClients(c);
-        aeMain(config.el);
-        endBenchmark();
-
-        prepareForBenchmark("HGET");
-        c = createClient();
-        if (!c) exit(1);
-        c->obuf = sdscat(c->obuf,"HGET foo_rand000000000000\r\n");
-        prepareClientForReply(c,REPLY_BULK);
-        createMissingClients(c);
-        aeMain(config.el);
-        endBenchmark();
+        simpleBenchmark("HSET");
+        simpleBenchmark("HGET");
 
         printf("\n");
     } while(config.loop);
