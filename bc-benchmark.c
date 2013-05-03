@@ -431,7 +431,11 @@ void simpleBenchmark(char *command) {
     if (!c) exit(1);
 
     prepareForBenchmark(command);
-    c->obuf = sdscatprintf(c->obuf, "%s foo_rand000000000000 0\r\n", command);
+    if (strstr(command, "SET")) {
+        c->obuf = sdscatprintf(c->obuf, "%s foo_rand000000000000 0\r\n", command);
+    } else {
+        c->obuf = sdscatprintf(c->obuf, "%s foo_rand000000000000\r\n", command);
+    }
     prepareClientForReply(c,REPLY_RETCODE);
     createMissingClients(c);
     aeMain(config.el);
