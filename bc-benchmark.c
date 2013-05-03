@@ -490,6 +490,10 @@ int main(int argc, char **argv) {
     do {
         simpleBenchmark("HSET");
         simpleBenchmark("HGET");
+        simpleBenchmark("HDET");
+        simpleBenchmark("ATSET");
+        simpleBenchmark("ATGET");
+        simpleBenchmark("ATDET");
 
         printf("\n");
     } while(config.loop);
