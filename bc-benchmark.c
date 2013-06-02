@@ -443,9 +443,12 @@ void simpleBenchmark(char *command) {
     prepareForBenchmark(command);
     if (strstr(command, "SET")) {
         c->obuf = sdscatprintf(c->obuf, "%s foo_rand000000000000 0\r\n", command);
-    } else {
+    } else if (!strstr(command, "PING")) {
         c->obuf = sdscatprintf(c->obuf, "%s foo_rand000000000000\r\n", command);
+    } else {
+        c->obuf = sdscatprintf(c->obuf, "%s\r\n", command);
     }
+
     prepareClientForReply(c,REPLY_RETCODE);
     createMissingClients(c);
     aeMain(config.el);
@@ -499,12 +502,18 @@ int main(int argc, char **argv) {
     }
 
     do {
+        // HashTable
         simpleBenchmark("HSET");
         simpleBenchmark("HGET");
         simpleBenchmark("HDEL");
+
+        // AvlTree
         simpleBenchmark("ATSET");
         simpleBenchmark("ATGET");
         simpleBenchmark("ATDEL");
+
+        // Other
+        simpleBenchmark("PING");
 
         printf("\n");
     } while(config.loop);
