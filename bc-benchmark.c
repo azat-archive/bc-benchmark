@@ -514,6 +514,7 @@ int main(int argc, char **argv) {
 
         // Other
         simpleBenchmark("PING");
+        simpleBenchmark("NOT_EXISTED_COMMAND");
 
         printf("\n");
     } while(config.loop);
