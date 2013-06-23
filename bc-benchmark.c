@@ -498,10 +498,6 @@ int main(int argc, char **argv) {
     }
 
     do {
-        /**
-         * TODO: add bulk requests
-         */
-
         // HashTable
         benchmark("HSET", "HSET foo_rand000000000000 0\r\n");
         benchmark("HGET", "HGET foo_rand000000000000\r\n");
@@ -515,6 +511,9 @@ int main(int argc, char **argv) {
         // Other
         benchmark("PING", "PING\r\n");
         benchmark("NOT_EXISTED_COMMAND", "NOT_EXISTED_COMMAND\r\n");
+
+        // TODO: add bulk request composer
+        benchmark("PING_BULK", "*1\r\n$4\r\nPING\r\n");
 
         printf("\n");
     } while(config.loop);
