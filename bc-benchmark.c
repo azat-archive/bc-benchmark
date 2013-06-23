@@ -436,18 +436,14 @@ int showThroughput(struct aeEventLoop *eventLoop, long long id, void *clientData
     return 250; /* every 250ms */
 }
 
-void simpleBenchmark(char *command) {
+void benchmark(char *name, char *command) {
     client c = createClient();
-    if (!c) exit(1);
-
-    prepareForBenchmark(command);
-    if (strstr(command, "SET")) {
-        c->obuf = sdscatprintf(c->obuf, "%s foo_rand000000000000 0\r\n", command);
-    } else if (!strstr(command, "PING")) {
-        c->obuf = sdscatprintf(c->obuf, "%s foo_rand000000000000\r\n", command);
-    } else {
-        c->obuf = sdscatprintf(c->obuf, "%s\r\n", command);
+    if (!c) {
+        exit(1);
     }
+
+    prepareForBenchmark(name);
+    c->obuf = sdscat(c->obuf, command);
 
     prepareClientForReply(c,REPLY_RETCODE);
     createMissingClients(c);
@@ -502,19 +498,23 @@ int main(int argc, char **argv) {
     }
 
     do {
+        /**
+         * TODO: add bulk requests
+         */
+
         // HashTable
-        simpleBenchmark("HSET");
-        simpleBenchmark("HGET");
-        simpleBenchmark("HDEL");
+        benchmark("HSET", "HSET foo_rand000000000000 0\r\n");
+        benchmark("HGET", "HGET foo_rand000000000000\r\n");
+        benchmark("HDEL", "HDEL foo_rand000000000000\r\n");
 
         // AvlTree
-        simpleBenchmark("ATSET");
-        simpleBenchmark("ATGET");
-        simpleBenchmark("ATDEL");
+        benchmark("ATSET", "ATSET foo_rand000000000000 0\r\n");
+        benchmark("ATGET", "ATGET foo_rand000000000000\r\n");
+        benchmark("ATDEL", "ATDEL foo_rand000000000000\r\n");
 
         // Other
-        simpleBenchmark("PING");
-        simpleBenchmark("NOT_EXISTED_COMMAND");
+        benchmark("PING", "PING\r\n");
+        benchmark("NOT_EXISTED_COMMAND", "NOT_EXISTED_COMMAND\r\n");
 
         printf("\n");
     } while(config.loop);
